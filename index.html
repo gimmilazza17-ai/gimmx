@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GIMMX</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e14;--surface:#13161f;--surface2:#1a1e2b;--border:#252836;
+  --accent:#e8ff4a;--accent2:#4af7a8;--accent3:#4ab8f7;--accent4:#f97316;
+  --text:#e8eaf0;--muted:#6b7280;--danger:#ff5454;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font)}
+.dashboard{min-height:100vh;max-width:820px;margin:0 auto;padding:0 0 120px}
+.topbar{padding:1.5rem 1.5rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.topbar-left h1{font-size:1.8rem;font-weight:800;letter-spacing:-.04em;color:var(--accent)}
+.topbar-left p{font-size:.78rem;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.topbar-right{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:right;line-height:1.6}
+.nav{display:flex;overflow-x:auto;gap:.3rem;padding:.75rem 1rem;border-bottom:1px solid var(--border);scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{flex-shrink:0;background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:999px;font-family:var(--font);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.nav-btn.active{background:var(--accent);color:#0c0e14;border-color:var(--accent)}
+.nav-btn.ai-btn{border-color:#7c3aed;color:#a78bfa}
+.nav-btn.ai-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.tab-content{padding:1.25rem 1.5rem}
+.tab-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.tab-header h2{font-size:1.15rem;font-weight:800;letter-spacing:-.02em}
+.tab-header h3{font-size:.9rem;font-weight:700;color:var(--muted)}
+.badge{background:var(--surface2);border:1px solid var(--border);color:var(--accent2);font-family:var(--mono);font-size:.7rem;padding:.2rem .6rem;border-radius:999px}
+.btn-add{background:var(--accent);color:#0c0e14;border:none;padding:.4rem .9rem;border-radius:999px;font-family:var(--font);font-size:.78rem;font-weight:700;cursor:pointer}
+.btn-add:hover{opacity:.85}
+.btn-save{background:var(--accent2);color:#0c0e14;border:none;padding:.5rem 1.2rem;border-radius:8px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;margin-top:.5rem}
+.btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:.2rem .4rem;border-radius:4px;flex-shrink:0}
+.btn-del:hover{color:var(--danger)}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.25rem;display:flex;flex-direction:column;gap:.75rem}
+.form-row{display:flex;gap:.75rem;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:.3rem;flex:1;min-width:90px}
+.form-group.small{flex:0 1 130px}
+.form-group.flex-2{flex:2}
+label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--mono)}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.45rem .65rem;border-radius:8px;font-family:var(--font);font-size:.85rem;outline:none;width:100%;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical}
+select option{background:var(--surface2)}
+.stats-row{display:flex;gap:.65rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.stat-box{flex:1;min-width:80px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.8rem;display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.stat-val{font-size:1.4rem;font-weight:800;color:var(--accent);font-family:var(--mono);letter-spacing:-.03em}
+.stat-val.green{color:var(--accent2)}
+.stat-val.blue{color:var(--accent3)}
+.stat-val.orange{color:var(--accent4)}
+.stat-label{font-size:.65rem;color:var(--muted);text-align:center;font-family:var(--mono)}
+.log-list{display:flex;flex-direction:column;gap:.5rem}
+.log-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.7rem .85rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;border-left:3px solid var(--border)}
+.log-item.workout-upper{border-left-color:var(--accent)}
+.log-item.workout-lower{border-left-color:var(--accent3)}
+.log-item.workout-full{border-left-color:var(--accent2)}
+.log-item.workout-rest{border-left-color:var(--muted)}
+.log-item.run-zone{border-left-color:var(--accent2)}
+.log-item.run-tempo{border-left-color:var(--accent4)}
+.log-item.run-long{border-left-color:#a855f7}
+.log-item.run-easy{border-left-color:var(--accent3)}
+.log-left{display:flex;flex-direction:column;gap:.2rem;flex:1}
+.log-type{font-size:.85rem;font-weight:700}
+.log-date{font-size:.7rem;color:var(--muted);font-family:var(--mono)}
+.log-detail{font-size:.75rem;color:var(--accent3);font-family:var(--mono)}
+.log-note{font-size:.72rem;color:var(--muted);font-style:italic}
+.empty{color:var(--muted);font-size:.8rem;text-align:center;padding:2rem;font-family:var(--mono);border:1px dashed var(--border);border-radius:10px}
+.week-strip{display:flex;gap:.4rem;margin-bottom:1.25rem}
+.day-pill{display:flex;flex-direction:column;align-items:center;gap:.2rem;flex:1;padding:.5rem 0;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:.68rem;font-weight:700;color:var(--muted);font-family:var(--mono)}
+.day-pill.today{border-color:var(--accent);color:var(--accent)}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--accent2)}
+.chart-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;margin-bottom:1.25rem}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem}
+.chart-title{font-size:.78rem;font-weight:700;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.chart-tabs{display:flex;gap:.3rem}
+.chart-tab{background:none;border:1px solid var(--border);color:var(--muted);padding:.2rem .55rem;border-radius:999px;font-family:var(--mono);font-size:.65rem;cursor:pointer}
+.chart-tab.active{background:var(--surface2);color:var(--text);border-color:var(--accent)}
+.chart-area{position:relative;height:140px;width:100%}
+.chart-svg{width:100%;height:100%}
+.chart-no-data{display:flex;align-items:center;justify-content:center;height:140px;color:var(--muted);font-size:.75rem;font-family:var(--mono)}
+.todo-input-row{display:flex;gap:.5rem;margin-bottom:1rem}
+.todo-input-row select{flex:0 0 110px}
+.todo-input-row input{flex:1}
+.todo-list{display:flex;flex-direction:column;gap:.4rem}
+.todo-item{display:flex;align-items:center;gap:.6rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem}
+.todo-item.done .todo-text{text-decoration:line-through;color:var(--muted)}
+.todo-check{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);background:none;cursor:pointer;color:var(--accent2);font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.todo-check.checked{background:var(--accent2);border-color:var(--accent2);color:#0c0e14}
+.todo-cat{font-size:.62rem;font-family:var(--mono);font-weight:700;color:var(--accent);background:var(--surface2);padding:.1rem .4rem;border-radius:4px;white-space:nowrap}
+.todo-text{flex:1;font-size:.85rem}
+.divider-label{font-size:.68rem;color:var(--muted);font-family:var(--mono);margin:.5rem 0 .25rem;padding-left:.25rem}
+.exams-list{display:flex;flex-direction:column;gap:.65rem}
+.exam-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.55rem}
+.exam-top{display:flex;gap:.75rem;align-items:center}
+.exam-name-input{font-size:.88rem;font-weight:700;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);padding:.2rem 0;flex:1;border-radius:0}
+.exam-name-input:focus{border-bottom-color:var(--accent);outline:none}
+.exam-top select{flex:0 0 135px;font-size:.73rem;font-weight:700;border-width:2px}
+.exam-bottom{display:flex;gap:.65rem;align-items:flex-end}
+.progress-bar-wrap{margin-bottom:1.25rem}
+.progress-label-row{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);font-family:var(--mono);margin-bottom:.35rem}
+.progress-bar-track{background:var(--surface2);border-radius:999px;height:8px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--accent2);border-radius:999px;transition:width .4s}
+.progress-bar-fill.meta{background:var(--accent)}
+.progress-label{font-size:.68rem;color:var(--muted);font-family:var(--mono);margin-top:.3rem;display:block}
+.meta-fields{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.25rem}
+.cert-badge{display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;font-weight:700;color:var(--accent)}
+.cert-badge input{width:auto}
+/* Meta Roadmap */
+.meta-section-tabs{display:flex;gap:.4rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.meta-stab{background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem .85rem;border-radius:999px;font-family:var(--font);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.meta-stab:hover{border-color:var(--accent);color:var(--accent)}
+.meta-stab.active{background:var(--accent);color:#0c0e14;border-color:var(--accent)}
+.meta-roadmap{display:flex;flex-direction:column;gap:.85rem}
+.roadmap-intro{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.6rem}
+.roadmap-intro-text{font-size:.83rem;line-height:1.55;color:var(--text)}
+.roadmap-intro-text strong{color:var(--accent)}
+.roadmap-progress-mini{display:flex;flex-direction:column;gap:.3rem}
+.weeks-list{display:flex;flex-direction:column;gap:.5rem}
+.week-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s}
+.week-card.done{border-color:rgba(74,247,168,.25);opacity:.8}
+.week-card.current{border-color:var(--accent);box-shadow:0 0 0 1px rgba(232,255,74,.15)}
+.week-card-header{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;cursor:pointer;gap:.75rem}
+.week-card-header:hover{background:var(--surface2)}
+.week-card-left{display:flex;align-items:center;gap:.75rem;flex:1;min-width:0}
+.week-num-badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.75rem;font-weight:700;flex-shrink:0}
+.week-card-info{flex:1;min-width:0}
+.week-card-title{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.week-card-meta{font-size:.68rem;color:var(--muted);font-family:var(--mono);margin-top:.15rem}
+.current-badge{font-size:.62rem;background:rgba(232,255,74,.15);color:var(--accent);border:1px solid rgba(232,255,74,.3);padding:.1rem .4rem;border-radius:999px;margin-left:.5rem;font-family:var(--mono);font-weight:700;white-space:nowrap}
+.week-card-body{padding:.85rem 1rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.75rem}
+.week-tasks{display:flex;flex-direction:column;gap:.55rem}
+.week-task{display:flex;gap:.65rem;align-items:flex-start}
+.week-task-num{width:20px;height:20px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-family:var(--mono);font-weight:700;color:var(--muted);flex-shrink:0;margin-top:.1rem}
+.week-task-content{flex:1;display:flex;flex-direction:column;gap:.2rem}
+.week-task-text{font-size:.83rem;line-height:1.45;color:var(--text)}
+.week-task-link{font-size:.72rem;font-family:var(--mono);color:var(--accent3);text-decoration:none;display:inline-flex;align-items:center;gap:.25rem;border:1px solid rgba(74,184,247,.2);padding:.15rem .5rem;border-radius:5px;background:rgba(74,184,247,.05);width:fit-content;transition:all .15s}
+.week-task-link:hover{background:rgba(74,184,247,.12);border-color:var(--accent3)}
+.week-note{background:rgba(232,255,74,.06);border:1px solid rgba(232,255,74,.15);border-radius:8px;padding:.6rem .8rem;font-size:.78rem;color:var(--muted);line-height:1.5;font-style:italic}
+/* Exercise Table */
+.ex-table-wrap{display:flex;flex-direction:column;gap:.85rem;margin-bottom:.75rem}
+.ex-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:.85rem;display:flex;flex-direction:column;gap:.65rem}
+.ex-block-header{display:flex;align-items:center;gap:.5rem;justify-content:space-between}
+.ex-name-input{flex:1;background:transparent;border:none;border-bottom:1.5px solid var(--border);color:var(--text);font-family:var(--font);font-size:.92rem;font-weight:700;padding:.2rem 0;outline:none;min-width:0}
+.ex-name-input:focus{border-bottom-color:var(--accent)}
+.ex-name-input::placeholder{color:var(--muted);font-weight:400}
+.ex-status-row{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+.prog-badge{font-size:.68rem;font-family:var(--mono);font-weight:700;padding:.2rem .5rem;border-radius:999px;white-space:nowrap}
+.prog-badge.up{background:rgba(232,255,74,.12);color:var(--accent);border:1px solid rgba(232,255,74,.3)}
+.prog-badge.ok{background:rgba(74,247,168,.1);color:var(--accent2);border:1px solid rgba(74,247,168,.25)}
+.prog-badge.down{background:rgba(255,84,84,.1);color:var(--danger);border:1px solid rgba(255,84,84,.25)}
+.ex-range-row{display:flex;align-items:flex-end;gap:.6rem;flex-wrap:wrap}
+.ex-range-hint{font-size:.68rem;color:var(--muted);font-family:var(--mono);flex:1;min-width:140px;padding-bottom:.45rem;line-height:1.4}
+.ex-range-hint strong{color:var(--accent3)}
+.sets-table{display:flex;flex-direction:column;gap:.3rem}
+.sets-table-head{display:grid;grid-template-columns:30px 1fr 1fr 28px 24px;gap:.4rem;align-items:center;padding:.25rem .1rem;font-size:.65rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);margin-bottom:.1rem}
+.sets-table-row{display:grid;grid-template-columns:30px 1fr 1fr 28px 24px;gap:.4rem;align-items:center}
+.set-num{font-family:var(--mono);font-size:.75rem;color:var(--muted);text-align:center}
+.set-input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.35rem .5rem;border-radius:6px;font-family:var(--mono);font-size:.82rem;text-align:center;outline:none;width:100%;transition:border-color .15s}
+.set-input:focus{border-color:var(--accent)}
+.set-input.set-max{border-color:var(--accent);color:var(--accent);background:rgba(232,255,74,.06)}
+.set-input.set-ok{border-color:var(--accent2);color:var(--accent2)}
+.set-input.set-low{border-color:var(--danger);color:var(--danger)}
+.set-status-icon{text-align:center;font-size:.85rem}
+.btn-add-set{background:none;border:1px dashed var(--border);color:var(--muted);padding:.3rem .7rem;border-radius:6px;font-family:var(--mono);font-size:.72rem;cursor:pointer;margin-top:.2rem;transition:all .15s;text-align:left}
+.btn-add-set:hover{border-color:var(--accent2);color:var(--accent2)}
+.btn-add-ex{background:none;border:1px dashed var(--border);color:var(--muted);padding:.5rem 1rem;border-radius:8px;font-family:var(--font);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;width:100%;text-align:center}
+.btn-add-ex:hover{border-color:var(--accent);color:var(--accent)}
+/* Log detail */
+.ex-log-table{margin-top:.75rem;display:flex;flex-direction:column;gap:.5rem;border-top:1px solid var(--border);padding-top:.75rem}
+.ex-log-block{display:flex;flex-direction:column;gap:.3rem}
+.ex-log-name{font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.ex-log-range{font-size:.65rem;font-family:var(--mono);color:var(--muted)}
+.ex-log-sets{display:flex;flex-wrap:wrap;gap:.4rem}
+.ex-log-set{font-size:.72rem;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);padding:.2rem .5rem;border-radius:5px;color:var(--text)}
+.ex-log-set strong{color:var(--accent3)}
+/* AI */
+.ai-widget{background:linear-gradient(135deg,#1a1230 0%,#13161f 100%);border:1px solid #3d2d6b;border-radius:14px;padding:1rem 1.1rem;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.ai-widget::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(124,58,237,.15) 0%,transparent 70%);pointer-events:none}
+.ai-widget-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.ai-widget-title{display:flex;align-items:center;gap:.5rem;font-size:.73rem;font-weight:700;color:#a78bfa;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+.ai-ask-btn{background:#7c3aed;color:#fff;border:none;padding:.35rem .8rem;border-radius:999px;font-family:var(--font);font-size:.73rem;font-weight:700;cursor:pointer}
+.ai-ask-btn:hover{opacity:.85}
+.ai-ask-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-content{font-size:.85rem;line-height:1.7;color:var(--text)}
+.ai-content p{margin-bottom:.6rem}
+.ai-content p:last-child{margin-bottom:0}
+.ai-content strong{color:var(--accent2)}
+.ai-loading{display:flex;align-items:center;gap:.5rem;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:pulse .8s ease-in-out infinite}
+.ai-dot:nth-child(2){animation-delay:.2s}
+.ai-dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.ai-placeholder{color:var(--muted);font-size:.8rem;font-family:var(--mono);font-style:italic}
+/* Coach Tab */
+.coach-tab{padding:1.25rem 1.5rem}
+.coach-hero{background:linear-gradient(135deg,#1a1230 0%,#13161f 100%);border:1px solid #3d2d6b;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;text-align:center;position:relative;overflow:hidden}
+.coach-hero::before{content:'🧠';position:absolute;top:-10px;right:-10px;font-size:5rem;opacity:.08}
+.coach-hero h2{font-size:1.3rem;font-weight:800;color:#a78bfa;margin-bottom:.4rem}
+.coach-hero p{font-size:.82rem;color:var(--muted);font-family:var(--mono)}
+.coach-sections{display:flex;flex-direction:column;gap:1rem}
+.coach-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.coach-card-header{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1rem;border-bottom:1px solid transparent;cursor:pointer;transition:background .15s}
+.coach-card-header:hover{background:var(--surface2)}
+.coach-card-header.open{border-bottom-color:var(--border)}
+.coach-card-title{display:flex;align-items:center;gap:.5rem;font-size:.88rem;font-weight:700}
+.coach-card-icon{font-size:1.1rem}
+.coach-card-body{padding:1rem}
+.coach-ask-row{display:flex;gap:.5rem;margin-top:1rem}
+.coach-ask-input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.5rem .75rem;border-radius:8px;font-family:var(--font);font-size:.85rem;outline:none}
+.coach-ask-input:focus{border-color:#7c3aed}
+.coach-send-btn{background:#7c3aed;color:#fff;border:none;padding:.5rem 1rem;border-radius:8px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.coach-send-btn:disabled{opacity:.5;cursor:not-allowed}
+.coach-chat{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem;max-height:500px;overflow-y:auto}
+.coach-msg{padding:.75rem .9rem;border-radius:10px;font-size:.85rem;line-height:1.65}
+.coach-msg.user{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.coach-msg.ai{background:linear-gradient(135deg,#1a1230,#13161f);border:1px solid #3d2d6b;color:var(--text)}
+.coach-msg.ai strong{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+const STORAGE_KEY = "gimmx_v3";
+
+const defaultData = {
+  workouts:[],runs:[],todos:[],sleep:[],
+  exams:[
+    {id:1,name:"Diritto",status:"pending",date:"",note:""},
+    {id:2,name:"Esame 2",status:"pending",date:"",note:""},
+    {id:3,name:"Esame 3",status:"pending",date:"",note:""},
+    {id:4,name:"Esame 4",status:"pending",date:"",note:""},
+    {id:5,name:"Esame 5",status:"pending",date:"",note:""},
+    {id:6,name:"Esame 6",status:"pending",date:"",note:""},
+  ],
+  metaAds:{certDone:false,studyHours:0,clients:0,revenue:0,weeklyGoalHours:3,notes:"",studyLog:[]},
+};
+
+function useStorage(){
+  const [data,setData]=useState(()=>{
+    try{const s=localStorage.getItem(STORAGE_KEY);if(s)return{...defaultData,...JSON.parse(s)};}catch{}
+    return defaultData;
+  });
+  const save=(d)=>{setData(d);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{}};
+  return [data,save];
+}
+
+function today(){return new Date().toISOString().split("T")[0];}
+function fmt(d){if(!d)return"—";return new Date(d).toLocaleDateString("it-IT",{day:"2-digit",month:"short"});}
+function isoWeek(d){const date=new Date(d);date.setHours(0,0,0,0);date.setDate(date.getDate()+3-(date.getDay()+6)%7);const w1=new Date(date.getFullYear(),0,4);return 1+Math.round(((date-w1)/86400000-3+(w1.getDay()+6)%7)/7);}
+function isoWeekYear(d){const date=new Date(d);return`${date.getFullYear()}-W${String(isoWeek(d)).padStart(2,"0")}`;}
+
+function lastNDays(items,n,getVal,getDate){
+  const days=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().split("T")[0];
+    const m=items.filter(it=>getDate(it)===key);
+    const v=m.length?getVal(m):null;
+    if(v!==null)days.push({label:d.toLocaleDateString("it-IT",{day:"2-digit",month:"2-digit"}).slice(0,5),v,key});
+  }
+  return days;
+}
+function lastNWeeks(items,n,getVal,getDate){
+  const weeks=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i*7);
+    const wk=isoWeekYear(d.toISOString().split("T")[0]);
+    const m=items.filter(it=>isoWeekYear(getDate(it))===wk);
+    if(m.length)weeks.push({label:`S${isoWeek(d.toISOString().split("T")[0])}`,v:getVal(m),key:wk});
+  }
+  return weeks;
+}
+
+// ── CLAUDE API ───────────────────────────────────────────────────────────────
+const SYSTEM_COACH=`Sei l'AI Coach integrato in GIMMX, la dashboard personale di Gimmi.
+Contesto: 25 anni, Torino. Lavoro fisso (recupero crediti). Laurea magistrale Marketing quasi finita. Obiettivo: consulente freelance entro 30 anni. Percorso: Meta Ads per PMI locali.
+Allenamento: programma ibrido 6 giorni — Upper/Lower/Full Body gym + 3 giorni running (piano 20 settimane).
+Garmin Forerunner 265. Preferisce comunicazione scritta. Poco tempo libero (sere e weekend).
+Tono: diretto, concreto, come un coach esperto e amico fidato. Italiano. Analizza i dati reali. Usa **grassetto** per punti chiave. Scrivi in modo discorsivo e coinvolgente, non a liste.`;
+
+async function askClaude(userMsg){
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM_COACH,messages:[{role:"user",content:userMsg}]})
+  });
+  const d=await res.json();
+  if(!res.ok)throw new Error(d.error?.message||"Errore API");
+  return d.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+}
+
+async function askClaudeChat(messages){
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM_COACH,messages})
+  });
+  const d=await res.json();
+  if(!res.ok)throw new Error(d.error?.message||"Errore API");
+  return d.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+}
+
+function buildSummary(data){
+  const now=new Date();
+  const d7=(arr,f)=>arr.filter(x=>(now-new Date(x[f]))/86400000<7);
+  const wk=d7(data.workouts,"date");
+  const runs=d7(data.runs,"date");
+  const slp=d7(data.sleep,"date");
+  const avgH=slp.length?(slp.reduce((s,r)=>s+(parseFloat(r.hours)||0),0)/slp.length).toFixed(1):null;
+  const hrv=slp.filter(r=>parseFloat(r.hrv)>0);
+  const avgHRV=hrv.length?(hrv.reduce((s,r)=>s+(parseFloat(r.hrv)||0),0)/hrv.length).toFixed(0):null;
+  const hrR=slp.filter(r=>parseFloat(r.hrRest)>0);
+  const avgRest=hrR.length?(hrR.reduce((s,r)=>s+(parseFloat(r.hrRest)||0),0)/hrR.length).toFixed(0):null;
+  const kmR=runs.reduce((s,r)=>s+(parseFloat(r.distance)||0),0).toFixed(1);
+  return `DATI GIMMX — ${new Date().toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+
+WORKOUT (7gg): ${wk.length} sessioni — ${wk.map(w=>`${fmt(w.date)} ${w.type}${w.duration?" "+w.duration+"min":""}${w.weight?" @"+w.weight+"kg":""}`).join(", ")||"nessuno"}
+
+RUNNING (7gg): ${kmR}km — ${runs.map(r=>`${fmt(r.date)} ${r.type} ${r.distance||"?"}km${r.hr?" HR"+r.hr:""}${r.week?" sett."+r.week:""}`).join(", ")||"nessuno"}
+
+SLEEP (7gg): media ${avgH||"nd"}h — HRV medio ${avgHRV||"nd"}ms — HR riposo ${avgRest||"nd"}bpm
+Notti: ${slp.map(s=>`${fmt(s.date)}: ${s.hours}h Q${s.quality}/5${s.hrv?" HRV"+s.hrv:""}${s.hrRest?" riposo"+s.hrRest:""}`).join(" | ")||"nessun dato"}
+
+ESAMI: ${data.exams.filter(e=>e.status==="done").length}/${data.exams.length} passati — In studio: ${data.exams.find(e=>e.status==="studying")?.name||"nessuno"} — Da fare: ${data.exams.filter(e=>e.status==="pending").map(e=>e.name).join(", ")||"nessuno"}
+
+META ADS: ${data.metaAds.studyHours}h studio — Cert: ${data.metaAds.certDone?"sì":"no"} — Clienti: ${data.metaAds.clients} — Revenue: €${data.metaAds.revenue}`;
+}
+
+function fmtAI(t){return t.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n\n/g,"</p><p>").replace(/\n/g,"<br/>");}
+
+// ── AI WIDGET ─────────────────────────────────────────────────────────────────
+function AIWidget({data,context,prompt}){
+  const[text,setText]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[asked,setAsked]=useState(false);
+
+  const ask=async()=>{
+    setLoading(true);setAsked(true);
+    try{
+      const result=await askClaude(`${buildSummary(data)}\n\n=== RICHIESTA ===\n${prompt}`);
+      setText(result);
+    }catch(e){setText("Errore nel contattare Claude. Assicurati di essere connesso a internet.");}
+    setLoading(false);
+  };
+
+  return(
+    <div className="ai-widget">
+      <div className="ai-widget-header">
+        <div className="ai-widget-title">✦ AI Coach — {context}</div>
+        <button className="ai-ask-btn" onClick={ask} disabled={loading}>
+          {loading?"Analisi...":asked?"↻ Aggiorna":"Chiedi a Claude"}
+        </button>
+      </div>
+      {!asked&&<div className="ai-placeholder">Premi per ricevere consigli personalizzati basati sui tuoi dati reali.</div>}
+      {loading&&<div className="ai-loading"><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/><span style={{marginLeft:6}}>Claude sta analizzando i tuoi dati...</span></div>}
+      {text&&!loading&&<div className="ai-content" dangerouslySetInnerHTML={{__html:`<p>${fmtAI(text)}</p>`}}/>}
+    </div>
+  );
+}
+
+// ── CHARTS ───────────────────────────────────────────────────────────────────
+function LineChart({points,color}){
+  if(!points||points.length<2)return<div className="chart-no-data">Dati insufficienti — continua a registrare</div>;
+  const vals=points.map(p=>p.v);
+  const min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
+  const W=600,H=110;
+  const xs=points.map((_,i)=>20+i*(W-40)/(points.length-1));
+  const ys=points.map(p=>H-((p.v-min)/range)*(H-20)+10);
+  const path="M"+xs.map((x,i)=>`${x},${ys[i]}`).join(" L");
+  const area=path+` L${xs[xs.length-1]},${H+10} L${xs[0]},${H+10} Z`;
+  const gid="g"+Math.random().toString(36).slice(2);
+  return(
+    <svg viewBox={`0 0 ${W} ${H+30}`} className="chart-svg" preserveAspectRatio="none">
+      <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.2"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>
+      <path d={area} fill={`url(#${gid})`}/>
+      <path d={path} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {xs.map((x,i)=>(
+        <g key={i}>
+          <circle cx={x} cy={ys[i]} r="3.5" fill={color}/>
+          <text x={x} y={H+26} textAnchor="middle" fontSize="9" fill="#6b7280" fontFamily="DM Mono">{points[i].label}</text>
+          <text x={x} y={ys[i]-8} textAnchor="middle" fontSize="9" fill={color} fontFamily="DM Mono">{points[i].v}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+function BarChart({points,color}){
+  if(!points||points.length===0)return<div className="chart-no-data">Dati insufficienti — continua a registrare</div>;
+  const vals=points.map(p=>p.v);
+  const max=Math.max(...vals)||1;
+  const W=600,H=110;
+  const bw=Math.max(10,(W-40)/points.length-8);
+  const xs=points.map((_,i)=>20+i*(W-40)/points.length+(W-40)/points.length/2);
+  return(
+    <svg viewBox={`0 0 ${W} ${H+30}`} className="chart-svg" preserveAspectRatio="none">
+      {xs.map((x,i)=>{
+        const bh=((vals[i]||0)/max)*(H-20);
+        return(
+          <g key={i}>
+            <rect x={x-bw/2} y={H-bh+10} width={bw} height={bh} rx="4" fill={color} opacity="0.85"/>
+            <text x={x} y={H+26} textAnchor="middle" fontSize="9" fill="#6b7280" fontFamily="DM Mono">{points[i].label}</text>
+            {vals[i]>0&&<text x={x} y={H-bh+5} textAnchor="middle" fontSize="9" fill={color} fontFamily="DM Mono">{vals[i]}</text>}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+function ChartWidget({title,weekPoints,monthPoints,color,type="line"}){
+  const[period,setPeriod]=useState("week");
+  const pts=period==="week"?weekPoints:monthPoints;
+  const Chart=type==="bar"?BarChart:LineChart;
+  return(
+    <div className="chart-section">
+      <div className="chart-header">
+        <span className="chart-title">{title}</span>
+        <div className="chart-tabs">
+          <button className={`chart-tab${period==="week"?" active":""}`} onClick={()=>setPeriod("week")}>7gg</button>
+          <button className={`chart-tab${period==="month"?" active":""}`} onClick={()=>setPeriod("month")}>4sett</button>
+        </div>
+      </div>
+      <div className="chart-area"><Chart points={pts} color={color}/></div>
+    </div>
+  );
+}
+
+// ── WORKOUT ──────────────────────────────────────────────────────────────────
+const DAYS=["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+const WORKOUT_TYPES=["Upper Body","Lower Body","Full Body","Rest"];
+
+// Rep range presets: [min, max] — quando tutti i set raggiungono max, suggerisce aumento peso
+const REP_RANGES=[
+  {label:"Forza (3-5)",min:3,max:5},
+  {label:"Ipertrofia (6-8)",min:6,max:8},
+  {label:"Ipertrofia (8-10)",min:8,max:10},
+  {label:"Ipertrofia (10-12)",min:10,max:12},
+  {label:"Resistenza (12-15)",min:12,max:15},
+  {label:"Personalizzato",min:0,max:0},
+];
+
+function emptyExercise(){
+  return {id:Date.now()+Math.random(),name:"",sets:[{reps:"",kg:""}],repRangeMin:"8",repRangeMax:"12"};
+}
+
+// Calcola se l'esercizio è pronto per aumentare il peso
+function progressionStatus(ex){
+  const min=parseInt(ex.repRangeMin)||0;
+  const max=parseInt(ex.repRangeMax)||0;
+  if(!max||!ex.sets.length)return null;
+  const filledSets=ex.sets.filter(s=>s.reps!=="");
+  if(!filledSets.length)return null;
+  const allAtMax=filledSets.every(s=>parseInt(s.reps)>=max);
+  const anyBelowMin=filledSets.some(s=>parseInt(s.reps)<min);
+  if(allAtMax)return"up";      // 🔼 aumenta peso
+  if(anyBelowMin)return"down"; // 🔽 mantieni o riduci
+  return"ok";                  // ✓ nella zona
+}
+
+function ExerciseTable({exercises,onChange}){
+  const addEx=()=>onChange([...exercises,emptyExercise()]);
+  const delEx=(id)=>onChange(exercises.filter(e=>e.id!==id));
+  const updEx=(id,field,val)=>onChange(exercises.map(e=>e.id===id?{...e,[field]:val}:e));
+  const addSet=(id)=>onChange(exercises.map(e=>e.id===id?{...e,sets:[...e.sets,{reps:"",kg:""}]}:e));
+  const delSet=(id,si)=>onChange(exercises.map(e=>e.id===id?{...e,sets:e.sets.filter((_,i)=>i!==si)}:e));
+  const updSet=(id,si,field,val)=>onChange(exercises.map(e=>e.id===id?{...e,sets:e.sets.map((s,i)=>i===si?{...s,[field]:val}:s)}:e));
+
+  return(
+    <div className="ex-table-wrap">
+      {exercises.map((ex,ei)=>{
+        const status=progressionStatus(ex);
+        const preset=REP_RANGES.find(r=>r.min===parseInt(ex.repRangeMin)&&r.max===parseInt(ex.repRangeMax));
+        return(
+          <div key={ex.id} className="ex-block">
+            <div className="ex-block-header">
+              <input
+                className="ex-name-input"
+                placeholder={`Esercizio ${ei+1} (es. Squat, Bench Press...)`}
+                value={ex.name}
+                onChange={e=>updEx(ex.id,"name",e.target.value)}
+              />
+              <div className="ex-status-row">
+                {status==="up"&&<span className="prog-badge up">🔼 Aumenta peso</span>}
+                {status==="ok"&&<span className="prog-badge ok">✓ Nella zona</span>}
+                {status==="down"&&<span className="prog-badge down">⚠ Sotto il range</span>}
+                <button className="btn-del" onClick={()=>delEx(ex.id)}>×</button>
+              </div>
+            </div>
+
+            <div className="ex-range-row">
+              <div className="form-group" style={{flex:"0 0 180px"}}>
+                <label>Rep Range</label>
+                <select value={preset?preset.label:"Personalizzato"} onChange={e=>{
+                  const r=REP_RANGES.find(x=>x.label===e.target.value);
+                  if(r&&r.min>0){updEx(ex.id,"repRangeMin",String(r.min));updEx(ex.id,"repRangeMax",String(r.max));}
+                }}>
+                  {REP_RANGES.map(r=><option key={r.label}>{r.label}</option>)}
+                </select>
+              </div>
+              <div className="form-group" style={{flex:"0 0 70px"}}>
+                <label>Min rep</label>
+                <input type="number" min="1" value={ex.repRangeMin} onChange={e=>updEx(ex.id,"repRangeMin",e.target.value)}/>
+              </div>
+              <div className="form-group" style={{flex:"0 0 70px"}}>
+                <label>Max rep</label>
+                <input type="number" min="1" value={ex.repRangeMax} onChange={e=>updEx(ex.id,"repRangeMax",e.target.value)}/>
+              </div>
+              <div className="ex-range-hint">
+                Target: <strong>{ex.repRangeMin}–{ex.repRangeMax} rep</strong> · Raggiungi il max in tutti i set → aumenta il peso
+              </div>
+            </div>
+
+            <div className="sets-table">
+              <div className="sets-table-head">
+                <span>Set</span>
+                <span>Reps fatte</span>
+                <span>Kg usati</span>
+                <span>Stato</span>
+                <span></span>
+              </div>
+              {ex.sets.map((s,si)=>{
+                const reps=parseInt(s.reps);
+                const min=parseInt(ex.repRangeMin)||0;
+                const max=parseInt(ex.repRangeMax)||0;
+                let setStatus=null;
+                if(s.reps!==""){
+                  if(reps>=max)setStatus="max";
+                  else if(reps>=min)setStatus="ok";
+                  else setStatus="low";
+                }
+                return(
+                  <div key={si} className="sets-table-row">
+                    <span className="set-num">{si+1}</span>
+                    <input
+                      type="number" min="0" placeholder="—"
+                      className={`set-input${setStatus?" set-"+setStatus:""}`}
+                      value={s.reps}
+                      onChange={e=>updSet(ex.id,si,"reps",e.target.value)}
+                    />
+                    <input
+                      type="number" min="0" step="0.5" placeholder="kg"
+                      className="set-input"
+                      value={s.kg}
+                      onChange={e=>updSet(ex.id,si,"kg",e.target.value)}
+                    />
+                    <span className="set-status-icon">
+                      {setStatus==="max"&&<span title="Raggiunti i rep max!">🔥</span>}
+                      {setStatus==="ok"&&<span title="Nel range">✓</span>}
+                      {setStatus==="low"&&<span title="Sotto il minimo">⚠</span>}
+                    </span>
+                    <button className="btn-del" onClick={()=>delSet(ex.id,si)} style={{fontSize:".8rem"}}>×</button>
+                  </div>
+                );
+              })}
+              <button className="btn-add-set" onClick={()=>addSet(ex.id)}>+ Set</button>
+            </div>
+          </div>
+        );
+      })}
+      <button className="btn-add-ex" onClick={addEx}>+ Aggiungi esercizio</button>
+    </div>
+  );
+}
+
+function WorkoutTab({data,save}){
+  const blankForm=()=>({date:today(),type:"Upper Body",duration:"",notes:"",exercises:[emptyExercise()]});
+  const[form,setForm]=useState(blankForm());
+  const[adding,setAdding]=useState(false);
+  const[expanded,setExpanded]=useState(null);
+
+  const add=()=>{
+    const maxKg=form.exercises.flatMap(e=>e.sets.map(s=>parseFloat(s.kg)||0)).reduce((a,b)=>Math.max(a,b),0);
+    save({...data,workouts:[{...form,weight:maxKg||"",id:Date.now()},...data.workouts]});
+    setForm(blankForm());setAdding(false);
+  };
+  const del=(id)=>save({...data,workouts:data.workouts.filter(w=>w.id!==id)});
+
+  const wkPts=lastNDays(data.workouts,7,m=>m.reduce((s,w)=>s+(parseFloat(w.duration)||0),0),w=>w.date);
+  const moWkPts=lastNWeeks(data.workouts,4,m=>m.filter(w=>w.type!=="Rest").length,w=>w.date);
+  const overloadPts=lastNWeeks(data.workouts.filter(w=>parseFloat(w.weight)>0),4,m=>Math.round(m.reduce((s,w)=>s+(parseFloat(w.weight)||0),0)/m.length*10)/10,w=>w.date);
+
+  return(
+    <div className="tab-content">
+      <div className="tab-header"><h2>Workout Tracker</h2><button className="btn-add" onClick={()=>setAdding(!adding)}>{adding?"Annulla":"+ Nuova sessione"}</button></div>
+
+      {adding&&(
+        <div className="form-card">
+          <div className="form-row">
+            <div className="form-group"><label>Data</label><input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></div>
+            <div className="form-group"><label>Tipo</label><select value={form.type} onChange={e=>setForm({...form,type:e.target.value})}>{WORKOUT_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+            <div className="form-group"><label>Durata (min)</label><input type="number" placeholder="60" value={form.duration} onChange={e=>setForm({...form,duration:e.target.value})}/></div>
+          </div>
+
+          <ExerciseTable
+            exercises={form.exercises}
+            onChange={exs=>setForm({...form,exercises:exs})}
+          />
+
+          <div className="form-group"><label>Note sessione</label><input type="text" placeholder="Come ti sei sentito, note generali..." value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+          <button className="btn-save" onClick={add}>Salva Sessione</button>
+        </div>
+      )}
+
+      <div className="week-strip">
+        {DAYS.map(d=>{
+          const td=new Date().toLocaleDateString("it-IT",{weekday:"short"}).slice(0,3);
+          const isT=d.toLowerCase()===td.toLowerCase();
+          const hasW=data.workouts.some(w=>{const wd=new Date(w.date).toLocaleDateString("it-IT",{weekday:"short"}).slice(0,3);const diff=(new Date()-new Date(w.date))/86400000;return wd.toLowerCase()===d.toLowerCase()&&diff<7&&diff>=0;});
+          return<div key={d} className={`day-pill${isT?" today":""}${hasW?" done":""}`}><span>{d}</span>{hasW&&<span className="dot"/>}</div>;
+        })}
+      </div>
+
+      <AIWidget data={data} context="Workout" prompt="Analizza le mie sessioni di allenamento degli ultimi 7 giorni in dettaglio. Commenta volume, frequenza, progressione del carico. Sto rispettando il piano Upper/Lower/Full Body? Cosa fare nei prossimi 3 giorni e perché, considerando anche il mio stato di recupero da sonno e HRV se disponibili."/>
+      <ChartWidget title="Minuti allenamento (7gg)" weekPoints={wkPts} monthPoints={moWkPts.map(p=>({...p,v:p.v*45}))} color="#e8ff4a" type="bar"/>
+      <ChartWidget title="Sessioni/settimana · Peso medio (kg)" weekPoints={moWkPts} monthPoints={overloadPts} color="#4af7a8" type="bar"/>
+
+      <div className="log-list">
+        {data.workouts.length===0&&<div className="empty">Nessuna sessione registrata</div>}
+        {data.workouts.slice(0,20).map(w=>(
+          <div key={w.id} className={`log-item workout-${w.type.split(" ")[0].toLowerCase()}`}>
+            <div className="log-left" style={{width:"100%"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div>
+                  <span className="log-type">{w.type}</span>
+                  <span className="log-date" style={{display:"block"}}>{fmt(w.date)}{w.duration?` · ${w.duration}min`:""}</span>
+                </div>
+                <div style={{display:"flex",gap:".5rem",alignItems:"center"}}>
+                  <button className="btn-add" style={{fontSize:".68rem",padding:".2rem .6rem",background:"none",border:"1px solid var(--border)",color:"var(--muted)"}} onClick={()=>setExpanded(expanded===w.id?null:w.id)}>
+                    {expanded===w.id?"▲ chiudi":"▼ dettagli"}
+                  </button>
+                  <button className="btn-del" onClick={()=>del(w.id)}>×</button>
+                </div>
+              </div>
+              {w.notes&&<span className="log-note">{w.notes}</span>}
+              {expanded===w.id&&w.exercises&&w.exercises.length>0&&(
+                <div className="ex-log-table">
+                  {w.exercises.map((ex,i)=>(
+                    <div key={i} className="ex-log-block">
+                      <div className="ex-log-name">
+                        {ex.name||`Esercizio ${i+1}`}
+                        <span className="ex-log-range">Range: {ex.repRangeMin}–{ex.repRangeMax} rep</span>
+                        {(()=>{const st=progressionStatus(ex);return st==="up"?<span className="prog-badge up" style={{fontSize:".6rem"}}>🔼 Aumenta peso</span>:st==="ok"?<span className="prog-badge ok" style={{fontSize:".6rem"}}>✓</span>:st==="down"?<span className="prog-badge down" style={{fontSize:".6rem"}}>⚠</span>:null;})()}
+                      </div>
+                      <div className="ex-log-sets">
+                        {ex.sets.map((s,si)=>(
+                          <span key={si} className="ex-log-set">
+                            Set {si+1}: <strong>{s.reps||"—"} rep</strong> @ <strong>{s.kg||"—"} kg</strong>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── RUNNING ──────────────────────────────────────────────────────────────────
+const RUN_TYPES=["Zone 2","Tempo","Long Run","Easy"];
+function RunTab({data,save}){
+  const[form,setForm]=useState({date:today(),type:"Zone 2",distance:"",duration:"",hr:"",notes:"",week:""});
+  const[adding,setAdding]=useState(false);
+  const add=()=>{save({...data,runs:[{...form,id:Date.now()},...data.runs]});setForm({date:today(),type:"Zone 2",distance:"",duration:"",hr:"",notes:"",week:""});setAdding(false);};
+  const del=(id)=>save({...data,runs:data.runs.filter(r=>r.id!==id)});
+  const totalKm=data.runs.reduce((s,r)=>s+(parseFloat(r.distance)||0),0).toFixed(1);
+  const weekKm=data.runs.filter(r=>(new Date()-new Date(r.date))/86400000<7).reduce((s,r)=>s+(parseFloat(r.distance)||0),0).toFixed(1);
+  const kmWk=lastNDays(data.runs,7,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.distance)||0),0)*10)/10,r=>r.date);
+  const kmMo=lastNWeeks(data.runs,5,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.distance)||0),0)*10)/10,r=>r.date);
+  const hrWk=lastNDays(data.runs.filter(r=>parseFloat(r.hr)>0),7,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.hr)||0),0)/m.length),r=>r.date);
+  const hrMo=lastNWeeks(data.runs.filter(r=>parseFloat(r.hr)>0),5,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.hr)||0),0)/m.length),r=>r.date);
+  return(
+    <div className="tab-content">
+      <div className="tab-header"><h2>Running Log</h2><button className="btn-add" onClick={()=>setAdding(!adding)}>{adding?"Annulla":"+ Aggiungi"}</button></div>
+      <div className="stats-row">
+        <div className="stat-box"><span className="stat-val">{weekKm}</span><span className="stat-label">km questa sett.</span></div>
+        <div className="stat-box"><span className="stat-val">{totalKm}</span><span className="stat-label">km totali</span></div>
+        <div className="stat-box"><span className="stat-val">{data.runs.length}</span><span className="stat-label">sessioni</span></div>
+      </div>
+      {adding&&(
+        <div className="form-card">
+          <div className="form-row">
+            <div className="form-group"><label>Data</label><input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></div>
+            <div className="form-group"><label>Tipo</label><select value={form.type} onChange={e=>setForm({...form,type:e.target.value})}>{RUN_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+            <div className="form-group"><label>Sett. #</label><input type="number" placeholder="1" value={form.week} onChange={e=>setForm({...form,week:e.target.value})}/></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>Distanza (km)</label><input type="number" step="0.1" placeholder="5.0" value={form.distance} onChange={e=>setForm({...form,distance:e.target.value})}/></div>
+            <div className="form-group"><label>Durata (min)</label><input type="number" placeholder="35" value={form.duration} onChange={e=>setForm({...form,duration:e.target.value})}/></div>
+            <div className="form-group"><label>HR medio (bpm)</label><input type="number" placeholder="145" value={form.hr} onChange={e=>setForm({...form,hr:e.target.value})}/></div>
+          </div>
+          <div className="form-group"><label>Note</label><input type="text" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+          <button className="btn-save" onClick={add}>Salva Corsa</button>
+        </div>
+      )}
+      <AIWidget data={data} context="Running" prompt="Analizza le mie corse recenti in dettaglio. Volume settimanale, distribuzione tipologie (Zone 2, Tempo, Long Run), HR media. Sono nella progressione giusta del piano 20 settimane? Devo aumentare o ridurre il carico? Cosa fare nelle prossime 2-3 corse e con quale obiettivo specifico?"/>
+      <ChartWidget title="Volume km" weekPoints={kmWk} monthPoints={kmMo} color="#4af7a8" type="bar"/>
+      <ChartWidget title="HR medio per corsa (bpm)" weekPoints={hrWk} monthPoints={hrMo} color="#4ab8f7" type="line"/>
+      <div className="log-list">
+        {data.runs.length===0&&<div className="empty">Nessuna corsa registrata</div>}
+        {data.runs.map(r=>(
+          <div key={r.id} className={`log-item run-${r.type.split(" ")[0].toLowerCase()}`}>
+            <div className="log-left">
+              <span className="log-type">{r.type}{r.week?` · Sett. ${r.week}`:""}</span>
+              <span className="log-date">{fmt(r.date)}</span>
+              <span className="log-detail">{r.distance?`${r.distance} km`:""}{r.duration?` · ${r.duration} min`:""}{r.hr?` · ${r.hr} bpm`:""}</span>
+              {r.notes&&<span className="log-note">{r.notes}</span>}
+            </div>
+            <button className="btn-del" onClick={()=>del(r.id)}>×</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── TODO ─────────────────────────────────────────────────────────────────────
+function TodoTab({data,save}){
+  const[input,setInput]=useState("");const[cat,setCat]=useState("Generale");
+  const CATS=["Generale","Lavoro","Studio","Fitness","Freelance"];
+  const add=()=>{if(!input.trim())return;save({...data,todos:[...data.todos,{id:Date.now(),text:input,cat,done:false}]});setInput("");};
+  const toggle=(id)=>save({...data,todos:data.todos.map(t=>t.id===id?{...t,done:!t.done}:t)});
+  const del=(id)=>save({...data,todos:data.todos.filter(t=>t.id!==id)});
+  const pending=data.todos.filter(t=>!t.done);const done=data.todos.filter(t=>t.done);
+  return(
+    <div className="tab-content">
+      <div className="tab-header"><h2>Obiettivi & To-Do</h2><span className="badge">{pending.length} da fare</span></div>
+      <div className="todo-input-row">
+        <select value={cat} onChange={e=>setCat(e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select>
+        <input type="text" placeholder="Aggiungi obiettivo..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <button className="btn-add" onClick={add}>+</button>
+      </div>
+      <AIWidget data={data} context="Obiettivi" prompt="Guarda i miei obiettivi e to-do attuali, più il contesto completo della mia settimana (allenamento, sonno, esami, freelance). Cosa devo assolutamente prioritizzare questa settimana? Cosa posso rimandare? C'è qualcosa che sto trascurando rispetto agli obiettivi di lungo termine? Sii diretto e specifico."/>
+      <div className="todo-list">
+        {pending.map(t=>(
+          <div key={t.id} className="todo-item">
+            <button className="todo-check" onClick={()=>toggle(t.id)}/>
+            <span className="todo-cat">{t.cat}</span>
+            <span className="todo-text">{t.text}</span>
+            <button className="btn-del" onClick={()=>del(t.id)}>×</button>
+          </div>
+        ))}
+        {done.length>0&&<><div className="divider-label">Completati ({done.length})</div>
+          {done.map(t=>(
+            <div key={t.id} className="todo-item done">
+              <button className="todo-check checked" onClick={()=>toggle(t.id)}>✓</button>
+              <span className="todo-cat">{t.cat}</span>
+              <span className="todo-text">{t.text}</span>
+              <button className="btn-del" onClick={()=>del(t.id)}>×</button>
+            </div>
+          ))}</>}
+        {data.todos.length===0&&<div className="empty">Nessun obiettivo</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── SLEEP ─────────────────────────────────────────────────────────────────────
+function SleepTab({data,save}){
+  const[form,setForm]=useState({date:today(),hours:"",quality:"3",hrv:"",hrAvg:"",hrRest:"",notes:""});
+  const[adding,setAdding]=useState(false);
+  const add=()=>{if(!form.hours)return;save({...data,sleep:[{...form,id:Date.now()},...data.sleep]});setForm({date:today(),hours:"",quality:"3",hrv:"",hrAvg:"",hrRest:"",notes:""});setAdding(false);};
+  const del=(id)=>save({...data,sleep:data.sleep.filter(s=>s.id!==id)});
+  const qL={"1":"😫","2":"😕","3":"😐","4":"😊","5":"😎"};
+  const qN=["Pessimo","Scarso","Ok","Buono","Ottimo"];
+  const last7=data.sleep.slice(0,7);
+  const avgH=last7.length?(last7.reduce((s,r)=>s+(parseFloat(r.hours)||0),0)/last7.length).toFixed(1):"—";
+  const hrv7=last7.filter(r=>parseFloat(r.hrv)>0);
+  const avgHRV=hrv7.length?(hrv7.reduce((s,r)=>s+(parseFloat(r.hrv)||0),0)/hrv7.length).toFixed(0):"—";
+  const hrR7=last7.filter(r=>parseFloat(r.hrRest)>0);
+  const avgRest=hrR7.length?(hrR7.reduce((s,r)=>s+(parseFloat(r.hrRest)||0),0)/hrR7.length).toFixed(0):"—";
+  const hoursWk=lastNDays(data.sleep,7,m=>parseFloat((m.reduce((s,r)=>s+(parseFloat(r.hours)||0),0)/m.length).toFixed(1)),r=>r.date);
+  const hoursMo=lastNWeeks(data.sleep,5,m=>parseFloat((m.reduce((s,r)=>s+(parseFloat(r.hours)||0),0)/m.length).toFixed(1)),r=>r.date);
+  const hrvWk=lastNDays(data.sleep.filter(r=>parseFloat(r.hrv)>0),7,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.hrv)||0),0)/m.length),r=>r.date);
+  const hrvMo=lastNWeeks(data.sleep.filter(r=>parseFloat(r.hrv)>0),5,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.hrv)||0),0)/m.length),r=>r.date);
+  const hrRWk=lastNDays(data.sleep.filter(r=>parseFloat(r.hrRest)>0),7,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.hrRest)||0),0)/m.length),r=>r.date);
+  const hrRMo=lastNWeeks(data.sleep.filter(r=>parseFloat(r.hrRest)>0),5,m=>Math.round(m.reduce((s,r)=>s+(parseFloat(r.hrRest)||0),0)/m.length),r=>r.date);
+  return(
+    <div className="tab-content">
+      <div className="tab-header"><h2>Sleep & Recovery</h2><button className="btn-add" onClick={()=>setAdding(!adding)}>{adding?"Annulla":"+ Aggiungi"}</button></div>
+      <div className="stats-row">
+        <div className="stat-box"><span className="stat-val">{avgH}h</span><span className="stat-label">media 7gg</span></div>
+        <div className="stat-box"><span className="stat-val green">{avgHRV}</span><span className="stat-label">HRV medio (ms)</span></div>
+        <div className="stat-box"><span className="stat-val blue">{avgRest}</span><span className="stat-label">HR riposo medio</span></div>
+      </div>
+      {adding&&(
+        <div className="form-card">
+          <div className="form-row">
+            <div className="form-group"><label>Data</label><input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></div>
+            <div className="form-group"><label>Ore dormite</label><input type="number" step="0.5" placeholder="7.5" value={form.hours} onChange={e=>setForm({...form,hours:e.target.value})}/></div>
+            <div className="form-group"><label>Qualità</label><select value={form.quality} onChange={e=>setForm({...form,quality:e.target.value})}>{["1","2","3","4","5"].map(k=><option key={k} value={k}>{qL[k]} {qN[k-1]}</option>)}</select></div>
+          </div>
+          <div className="form-row">
+            <div className="form-group"><label>HRV (ms)</label><input type="number" placeholder="55" value={form.hrv} onChange={e=>setForm({...form,hrv:e.target.value})}/></div>
+            <div className="form-group"><label>HR media notte</label><input type="number" placeholder="58" value={form.hrAvg} onChange={e=>setForm({...form,hrAvg:e.target.value})}/></div>
+            <div className="form-group"><label>HR a riposo</label><input type="number" placeholder="52" value={form.hrRest} onChange={e=>setForm({...form,hrRest:e.target.value})}/></div>
+          </div>
+          <div className="form-group"><label>Note</label><input type="text" placeholder="Stressato, allenamento serale..." value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+          <button className="btn-save" onClick={add}>Salva</button>
+        </div>
+      )}
+      <AIWidget data={data} context="Sleep & Recovery" prompt="Analizza in dettaglio i miei dati di sonno: ore, qualità, HRV, HR a riposo. L'HRV è in trend positivo o negativo? L'HR a riposo cosa indica? Come questi numeri influenzano la mia capacità di allenarsi ad alta intensità? Dammi consigli pratici e specifici per migliorare il recupero nel mio contesto di vita (lavoro fisso + allenamenti intensi)."/>
+      <ChartWidget title="Ore di sonno" weekPoints={hoursWk} monthPoints={hoursMo} color="#4ab8f7" type="bar"/>
+      <ChartWidget title="HRV (ms) — trend in aumento = positivo" weekPoints={hrvWk} monthPoints={hrvMo} color="#4af7a8" type="line"/>
+      <ChartWidget title="HR a riposo (bpm) — trend in calo = positivo" weekPoints={hrRWk} monthPoints={hrRMo} color="#f97316" type="line"/>
+      <div className="log-list">
+        {data.sleep.length===0&&<div className="empty">Nessun dato sonno</div>}
+        {data.sleep.map(s=>(
+          <div key={s.id} className="log-item">
+            <div className="log-left">
+              <span className="log-type">{qL[s.quality]||"—"} {qN[(s.quality||3)-1]}</span>
+              <span className="log-date">{fmt(s.date)} · {s.hours}h</span>
+              <span className="log-detail">{s.hrv?`HRV ${s.hrv}ms`:""}{s.hrAvg?` · HR notte ${s.hrAvg}bpm`:""}{s.hrRest?` · Riposo ${s.hrRest}bpm`:""}</span>
+              {s.notes&&<span className="log-note">{s.notes}</span>}
+            </div>
+            <button className="btn-del" onClick={()=>del(s.id)}>×</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── ESAMI ────────────────────────────────────────────────────────────────────
+function EsamiTab({data,save}){
+  const upd=(id,f,v)=>save({...data,exams:data.exams.map(e=>e.id===id?{...e,[f]:v}:e)});
+  const sC={pending:"#f59e0b",studying:"#3b82f6",done:"#10b981",failed:"#ef4444"};
+  const sL={pending:"Da fare",studying:"In studio",done:"Passato ✓",failed:"Da ripetere"};
+  const passed=data.exams.filter(e=>e.status==="done").length;
+  const statusCounts=[
+    {label:"Da fare",v:data.exams.filter(e=>e.status==="pending").length},
+    {label:"Studio",v:data.exams.filter(e=>e.status==="studying").length},
+    {label:"Passati",v:data.exams.filter(e=>e.status==="done").length},
+    {label:"Ripetere",v:data.exams.filter(e=>e.status==="failed").length},
+  ].filter(p=>p.v>0);
+  return(
+    <div className="tab-content">
+      <div className="tab-header"><h2>Esami Magistrale</h2><span className="badge">{passed}/{data.exams.length} passati</span></div>
+      <div className="progress-bar-wrap">
+        <div className="progress-bar-track"><div className="progress-bar-fill" style={{width:`${(passed/data.exams.length)*100}%`}}/></div>
+        <span className="progress-label">{Math.round((passed/data.exams.length)*100)}% — obiettivo laurea</span>
+      </div>
+      {statusCounts.length>0&&<div className="chart-section"><div className="chart-header"><span className="chart-title">Stato esami</span></div><div className="chart-area"><BarChart points={statusCounts} color="#4af7a8"/></div></div>}
+      <AIWidget data={data} context="Esami" prompt="Analizza la mia situazione accademica: esami passati, in corso, da fare. Considerando che ho un lavoro fisso, un piano di allenamento intenso e sto avviando il freelance, come organizzo lo studio nelle prossime settimane per chiudere la magistrale il prima possibile? Dammi un piano concreto con indicazione di quante ore settimanali servono e quando studiarle."/>
+      <div className="exams-list">
+        {data.exams.map(e=>(
+          <div key={e.id} className="exam-card">
+            <div className="exam-top">
+              <input className="exam-name-input" value={e.name} onChange={ev=>upd(e.id,"name",ev.target.value)}/>
+              <select style={{borderColor:sC[e.status]}} value={e.status} onChange={ev=>upd(e.id,"status",ev.target.value)}>
+                {Object.entries(sL).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+              </select>
+            </div>
+            <div className="exam-bottom">
+              <div className="form-group small"><label>Data esame</label><input type="date" value={e.date} onChange={ev=>upd(e.id,"date",ev.target.value)}/></div>
+              <div className="form-group flex-2"><label>Note / Voto obiettivo</label><input type="text" placeholder="28, argomenti chiave..." value={e.note} onChange={ev=>upd(e.id,"note",ev.target.value)}/></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── META ADS ──────────────────────────────────────────────────────────────────
+const META_WEEKS = [
+  {
+    week: 1,
+    phase: "Setup & Orientamento",
+    phaseColor: "#4ab8f7",
+    hours: "2–3h",
+    goal: "Capire il sistema, creare gli account giusti",
+    tasks: [
+      { text: "Crea un account Meta Business Manager personale", url: "https://business.facebook.com", urlLabel: "business.facebook.com" },
+      { text: "Crea una Pagina Facebook di test (può essere fake/prova)", url: "https://www.facebook.com/pages/creation", urlLabel: "Crea Pagina FB" },
+      { text: "Esplora Meta Blueprint — sezione introduttiva gratuita", url: "https://www.facebook.com/business/learn", urlLabel: "Meta Blueprint" },
+      { text: "Leggi la guida ufficiale 'Inizia con le inserzioni'", url: "https://www.facebook.com/business/ads", urlLabel: "Meta for Business" },
+      { text: "Guarda: cos'è il Pixel, cos'è una campagna, cos'è un AdSet", url: "https://www.facebook.com/business/learn/lessons/facebook-ads-overview", urlLabel: "Blueprint: Panoramica Ads" },
+    ],
+    note: "Niente soldi spesi. Solo setup e orientamento. Max 30 min al giorno."
+  },
+  {
+    week: 2,
+    phase: "Struttura delle Campagne",
+    phaseColor: "#4af7a8",
+    hours: "2–3h",
+    goal: "Capire come funziona la struttura Campagna → AdSet → Inserzione",
+    tasks: [
+      { text: "Studia i 3 livelli: Campagna (obiettivo), AdSet (pubblico+budget), Inserzione (creativo)", url: "https://www.facebook.com/business/learn/lessons/campaign-structure", urlLabel: "Blueprint: Struttura" },
+      { text: "Studia gli obiettivi campagna: Awareness, Traffico, Contatti, Vendite", url: "https://www.facebook.com/business/learn/lessons/choose-right-campaign-objective", urlLabel: "Blueprint: Obiettivi" },
+      { text: "Crea una campagna TEST in modalità bozza (senza pubblicare)", url: "https://adsmanager.facebook.com", urlLabel: "Ads Manager" },
+      { text: "Esplora le opzioni di targeting: interessi, età, zona geografica", url: "https://www.facebook.com/business/learn/lessons/facebook-audience-targeting", urlLabel: "Blueprint: Targeting" },
+    ],
+    note: "Crea sempre in modalità bozza — non pubblicare nulla ancora."
+  },
+  {
+    week: 3,
+    phase: "Pubblici & Targeting",
+    phaseColor: "#e8ff4a",
+    hours: "2–3h",
+    goal: "Saper costruire un pubblico su misura per una PMI locale",
+    tasks: [
+      { text: "Studia Custom Audiences: traffico sito, lista email, engagement", url: "https://www.facebook.com/business/learn/lessons/retargeting-with-custom-audiences", urlLabel: "Blueprint: Custom Audiences" },
+      { text: "Studia Lookalike Audiences: come crearle e quando usarle", url: "https://www.facebook.com/business/learn/lessons/reach-new-audiences-lookalike", urlLabel: "Blueprint: Lookalike" },
+      { text: "Esercitati a creare un pubblico per una PMI locale (es. ristorante, palestra) in bozza", url: "https://adsmanager.facebook.com", urlLabel: "Ads Manager" },
+      { text: "Leggi: targeting geografico avanzato per attività locali", url: "https://www.facebook.com/business/help/202297959811696", urlLabel: "Help: Local Targeting" },
+    ],
+    note: "Pensa sempre a un cliente reale che potresti contattare — questo rende lo studio pratico."
+  },
+  {
+    week: 4,
+    phase: "Creatività & Copy",
+    phaseColor: "#f97316",
+    hours: "2–3h",
+    goal: "Capire cosa rende un'inserzione efficace visivamente e nel testo",
+    tasks: [
+      { text: "Studia i formati creativi: immagine singola, carosello, video, stories", url: "https://www.facebook.com/business/learn/lessons/creative-best-practices", urlLabel: "Blueprint: Creatività" },
+      { text: "Leggi le specifiche tecniche dei formati (dimensioni, testo max, ecc.)", url: "https://www.facebook.com/business/ads/ad-formats", urlLabel: "Meta: Formati Ads" },
+      { text: "Crea 2 inserzioni di prova su Canva (non pubblicarle)", url: "https://www.canva.com", urlLabel: "Canva — gratuito" },
+      { text: "Studia il copywriting per le ads: headline, primary text, CTA", url: "https://www.facebook.com/business/learn/lessons/writing-effective-ad-copy", urlLabel: "Blueprint: Ad Copy" },
+    ],
+    note: "Canva è lo strumento che userai con i clienti. Inizia a familiarizzare."
+  },
+  {
+    week: 5,
+    phase: "Pixel & Conversioni",
+    phaseColor: "#a855f7",
+    hours: "3h",
+    goal: "Capire come tracciare i risultati e ottimizzare per le conversioni",
+    tasks: [
+      { text: "Studia cos'è il Meta Pixel e come funziona il tracciamento eventi", url: "https://www.facebook.com/business/learn/lessons/meta-pixel", urlLabel: "Blueprint: Meta Pixel" },
+      { text: "Studia le Conversions API (CAPI) — sempre più importante dopo iOS 14", url: "https://www.facebook.com/business/help/2041148702652965", urlLabel: "Help: CAPI" },
+      { text: "Esplora Meta Events Manager", url: "https://business.facebook.com/events_manager", urlLabel: "Events Manager" },
+      { text: "Leggi la guida all'ottimizzazione per le conversioni", url: "https://www.facebook.com/business/learn/lessons/optimize-for-conversions", urlLabel: "Blueprint: Ottimizzazione" },
+    ],
+    note: "Argomento tecnico ma fondamentale — i clienti ti chiederanno sempre 'come misuri i risultati?'"
+  },
+  {
+    week: 6,
+    phase: "Budget, Bidding & Ottimizzazione",
+    phaseColor: "#4af7a8",
+    hours: "2–3h",
+    goal: "Capire come gestire il budget e leggere i dati delle campagne",
+    tasks: [
+      { text: "Studia le strategie di bidding: CBO vs ABO, cost cap, bid cap", url: "https://www.facebook.com/business/learn/lessons/budget-optimization", urlLabel: "Blueprint: Budget" },
+      { text: "Studia le metriche chiave: CPM, CPC, CTR, ROAS, CPL, CPA", url: "https://www.facebook.com/business/learn/lessons/measuring-ad-performance", urlLabel: "Blueprint: Metriche" },
+      { text: "Esercitati a leggere un report fittizio su Ads Manager", url: "https://adsmanager.facebook.com", urlLabel: "Ads Manager" },
+      { text: "Leggi: quando scalare, quando spegnere una campagna", url: "https://www.facebook.com/business/learn/lessons/scaling-campaigns", urlLabel: "Blueprint: Scaling" },
+    ],
+    note: "Questa settimana inizia a pensare a come presenteresti i risultati a un cliente in una slide semplice."
+  },
+  {
+    week: 7,
+    phase: "Certificazione Meta Blueprint",
+    phaseColor: "#e8ff4a",
+    hours: "3–4h",
+    goal: "Prepararsi e passare la certificazione Meta Certified Digital Marketing Associate",
+    tasks: [
+      { text: "Fai il corso ufficiale di preparazione alla certificazione", url: "https://www.facebook.com/business/learn/certification/exams/200-101-exam", urlLabel: "Blueprint: Certificazione 200-101" },
+      { text: "Ripassa tutti gli argomenti delle settimane precedenti", url: "https://www.facebook.com/business/learn", urlLabel: "Meta Blueprint — tutti i corsi" },
+      { text: "Fai il mock exam gratuito per testare la preparazione", url: "https://www.facebook.com/business/learn/certification", urlLabel: "Meta Certifications" },
+      { text: "Sostieni l'esame (€99, si può sostenere online da casa)", url: "https://www.facebook.com/business/learn/certification/exams/200-101-exam", urlLabel: "Prenota esame" },
+    ],
+    note: "La certificazione non è obbligatoria subito — se sei sotto esame universitario, spostala alla settimana 8-9. Priorità laurea."
+  },
+  {
+    week: 8,
+    phase: "Primo Cliente (Outreach)",
+    phaseColor: "#f97316",
+    hours: "2h studio + outreach",
+    goal: "Contattare i primi potenziali clienti locali con una proposta concreta",
+    tasks: [
+      { text: "Crea un profilo LinkedIn professionale ottimizzato per Meta Ads", url: "https://www.linkedin.com", urlLabel: "LinkedIn" },
+      { text: "Identifica 10 PMI locali a Torino senza ads attive (usa Facebook Ad Library)", url: "https://www.facebook.com/ads/library", urlLabel: "Meta Ad Library" },
+      { text: "Scrivi un messaggio di outreach su misura (non template generico)", url: "https://www.facebook.com/business/help", urlLabel: "Meta Business Help" },
+      { text: "Crea una proposta semplice (1 pagina) con cosa offri, come lavori, costo", url: "https://www.canva.com/templates/presentations", urlLabel: "Canva: Proposal Templates" },
+    ],
+    note: "Primo cliente ideale: gratis o a prezzo simbolico (€100–200/mese) per avere una case study. Non bruciare i contatti con proposte generiche."
+  },
+  {
+    week: 9,
+    phase: "Gestione Cliente & Reporting",
+    phaseColor: "#4ab8f7",
+    hours: "2h",
+    goal: "Capire come gestire un cliente nel tempo: onboarding, report mensile, comunicazione",
+    tasks: [
+      { text: "Scarica e studia un template di report mensile per Meta Ads", url: "https://looker.google.com", urlLabel: "Looker Studio (gratis)" },
+      { text: "Studia come fare l'onboarding di un cliente (accessi, brief, obiettivi)", url: "https://www.facebook.com/business/help/1642743619389849", urlLabel: "Help: Gestione Accessi" },
+      { text: "Crea un template di report base su Google Slides o Canva", url: "https://www.canva.com/presentations", urlLabel: "Canva Presentations" },
+      { text: "Leggi casi studio di campagne per PMI locali", url: "https://www.facebook.com/business/success", urlLabel: "Meta: Success Stories" },
+    ],
+    note: "Il reporting è ciò che fidelizza il cliente. Un PDF mensile chiaro vale più di mille promesse."
+  },
+  {
+    week: 10,
+    phase: "Autonomia & Scale",
+    phaseColor: "#a855f7",
+    hours: "2h + lavoro su cliente reale",
+    goal: "Consolidare le competenze, puntare al secondo cliente",
+    tasks: [
+      { text: "Analizza i risultati del primo cliente e ottimizza le campagne attive", url: "https://adsmanager.facebook.com", urlLabel: "Ads Manager" },
+      { text: "Studia advanced targeting e retargeting per migliorare i risultati", url: "https://www.facebook.com/business/learn/lessons/retargeting-strategies", urlLabel: "Blueprint: Retargeting avanzato" },
+      { text: "Porta la case study del primo cliente sul profilo LinkedIn", url: "https://www.linkedin.com", urlLabel: "LinkedIn" },
+      { text: "Identifica altri 10 potenziali clienti — outreach con social proof", url: "https://www.facebook.com/ads/library", urlLabel: "Meta Ad Library" },
+    ],
+    note: "A questo punto hai tutto per lavorare in autonomia. L'obiettivo è 2–3 clienti a €200–400/mese entro fine anno."
+  },
+];
+
+function MetaTab({data,save}){
+  const m=data.metaAds;
+  const upd=(f,v)=>save({...data,metaAds:{...m,[f]:v}});
+  const[logForm,setLogForm]=useState({date:today(),hours:"",topic:""});
+  const[addingLog,setAddingLog]=useState(false);
+  const[expandedWeek,setExpandedWeek]=useState(null);
+  const[activeSection,setActiveSection]=useState("roadmap");
+
+  const addLog=()=>{
+    if(!logForm.hours)return;
+    const log=[...(m.studyLog||[]),{...logForm,id:Date.now()}];
+    save({...data,metaAds:{...m,studyLog:log,studyHours:parseFloat(m.studyHours||0)+parseFloat(logForm.hours||0)}});
+    setLogForm({date:today(),hours:"",topic:""});setAddingLog(false);
+  };
+  const delLog=(id)=>{const log=m.studyLog.filter(l=>l.id!==id);save({...data,metaAds:{...m,studyLog:log,studyHours:log.reduce((s,l)=>s+(parseFloat(l.hours)||0),0)}});};
+
+  // Track completed weeks based on studyHours (rough estimate: 2.5h per week)
+  const completedWeeks = Math.min(10, Math.floor(parseFloat(m.studyHours||0) / 2.5));
+  const studyPct=Math.min(100,(parseFloat(m.studyHours)/25)*100); // 25h target for roadmap
+  const studyWk=lastNDays(m.studyLog||[],7,ms=>Math.round(ms.reduce((s,l)=>s+(parseFloat(l.hours)||0),0)*10)/10,l=>l.date);
+  const studyMo=lastNWeeks(m.studyLog||[],5,ms=>Math.round(ms.reduce((s,l)=>s+(parseFloat(l.hours)||0),0)*10)/10,l=>l.date);
+
+  return(
+    <div className="tab-content">
+      <div className="tab-header">
+        <h2>Meta Ads Freelance</h2>
+        <label className="cert-badge"><input type="checkbox" checked={m.certDone} onChange={e=>upd("certDone",e.target.checked)}/><span>{m.certDone?"🏆 Certificato!":"Cert. pending"}</span></label>
+      </div>
+
+      <div className="stats-row">
+        <div className="stat-box"><span className="stat-val">{m.studyHours}h</span><span className="stat-label">ore studio</span></div>
+        <div className="stat-box"><span className="stat-val" style={{color:"var(--accent4)"}}>{completedWeeks}/10</span><span className="stat-label">settimane completate</span></div>
+        <div className="stat-box"><span className="stat-val green">{m.clients}</span><span className="stat-label">clienti attivi</span></div>
+        <div className="stat-box"><span className="stat-val orange">€{m.revenue}</span><span className="stat-label">revenue totale</span></div>
+      </div>
+
+      {/* Section tabs */}
+      <div className="meta-section-tabs">
+        <button className={`meta-stab${activeSection==="roadmap"?" active":""}`} onClick={()=>setActiveSection("roadmap")}>📅 Piano 10 settimane</button>
+        <button className={`meta-stab${activeSection==="stats"?" active":""}`} onClick={()=>setActiveSection("stats")}>📊 Statistiche</button>
+        <button className={`meta-stab${activeSection==="log"?" active":""}`} onClick={()=>setActiveSection("log")}>📝 Log studio</button>
+      </div>
+
+      {/* ROADMAP */}
+      {activeSection==="roadmap"&&(
+        <div className="meta-roadmap">
+          <div className="roadmap-intro">
+            <div className="roadmap-intro-text">
+              <strong>Piano da zero a primo cliente</strong> — 2–3h a settimana, compatibile con esami e lavoro.
+              Ogni settimana ha obiettivi chiari, link diretti alle risorse e una nota pratica.
+            </div>
+            <div className="roadmap-progress-mini">
+              <div className="progress-bar-track"><div className="progress-bar-fill meta" style={{width:`${studyPct}%`}}/></div>
+              <span style={{fontSize:".68rem",color:"var(--muted)",fontFamily:"var(--mono)"}}>{m.studyHours}h / 25h stimate</span>
+            </div>
+          </div>
+
+          <div className="weeks-list">
+            {META_WEEKS.map((w)=>{
+              const done=w.week<=completedWeeks;
+              const current=w.week===completedWeeks+1;
+              const isOpen=expandedWeek===w.week;
+              return(
+                <div key={w.week} className={`week-card${done?" done":""}${current?" current":""}`}>
+                  <div className="week-card-header" onClick={()=>setExpandedWeek(isOpen?null:w.week)}>
+                    <div className="week-card-left">
+                      <div className="week-num-badge" style={{background:done?"var(--accent2)":current?w.phaseColor:"var(--surface2)",color:done||current?"#0c0e14":"var(--muted)"}}>
+                        {done?"✓":w.week}
+                      </div>
+                      <div className="week-card-info">
+                        <div className="week-card-title">
+                          Sett. {w.week} — <span style={{color:w.phaseColor}}>{w.phase}</span>
+                          {current&&<span className="current-badge">← Sei qui</span>}
+                        </div>
+                        <div className="week-card-meta">{w.hours} · {w.goal}</div>
+                      </div>
+                    </div>
+                    <span style={{color:"var(--muted)",fontSize:".9rem",flexShrink:0}}>{isOpen?"▲":"▼"}</span>
+                  </div>
+
+                  {isOpen&&(
+                    <div className="week-card-body">
+                      <div className="week-tasks">
+                        {w.tasks.map((t,i)=>(
+                          <div key={i} className="week-task">
+                            <div className="week-task-num">{i+1}</div>
+                            <div className="week-task-content">
+                              <div className="week-task-text">{t.text}</div>
+                              {t.url&&<a href={t.url} target="_blank" rel="noopener noreferrer" className="week-task-link">
+                                🔗 {t.urlLabel}
+                              </a>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {w.note&&<div className="week-note">💡 {w.note}</div>}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* STATS */}
+      {activeSection==="stats"&&(
+        <div>
+          <div className="meta-fields">
+            <div className="form-row">
+              <div className="form-group"><label>Clienti attivi</label><input type="number" value={m.clients} onChange={e=>upd("clients",e.target.value)}/></div>
+              <div className="form-group"><label>Revenue (€)</label><input type="number" value={m.revenue} onChange={e=>upd("revenue",e.target.value)}/></div>
+              <div className="form-group"><label>Ore/sett. obiettivo</label><input type="number" value={m.weeklyGoalHours} onChange={e=>upd("weeklyGoalHours",e.target.value)}/></div>
+            </div>
+            <div className="form-group"><label>Note / Prossimi step</label><textarea value={m.notes} onChange={e=>upd("notes",e.target.value)} placeholder="Argomenti da studiare, clienti da contattare..." rows={2}/></div>
+          </div>
+          <AIWidget data={data} context="Meta Ads Freelance" prompt="Analizza il mio percorso freelance Meta Ads: ore di studio, certificazione, clienti, revenue. Sono nei tempi giusti per costruire qualcosa di serio? Cosa faccio nei prossimi 30 giorni in modo concreto per avanzare? Come bilancio studio Blueprint, acquisizione clienti e tutti gli altri impegni? Dimmi la verità, anche se non è quello che voglio sentirmi dire."/>
+          <ChartWidget title="Ore studio a settimana" weekPoints={studyWk} monthPoints={studyMo} color="#e8ff4a" type="bar"/>
+        </div>
+      )}
+
+      {/* LOG */}
+      {activeSection==="log"&&(
+        <div>
+          <div className="tab-header" style={{marginTop:".25rem"}}><h3>Log di Studio</h3><button className="btn-add" onClick={()=>setAddingLog(!addingLog)}>{addingLog?"Annulla":"+ Aggiungi"}</button></div>
+          {addingLog&&(
+            <div className="form-card">
+              <div className="form-row">
+                <div className="form-group"><label>Data</label><input type="date" value={logForm.date} onChange={e=>setLogForm({...logForm,date:e.target.value})}/></div>
+                <div className="form-group"><label>Ore</label><input type="number" step="0.5" placeholder="1.5" value={logForm.hours} onChange={e=>setLogForm({...logForm,hours:e.target.value})}/></div>
+                <div className="form-group flex-2"><label>Argomento / Settimana piano</label><input type="text" placeholder="Sett.1 – Business Manager, Targeting..." value={logForm.topic} onChange={e=>setLogForm({...logForm,topic:e.target.value})}/></div>
+              </div>
+              <button className="btn-save" onClick={addLog}>Salva</button>
+            </div>
+          )}
+          <div className="log-list">
+            {(!m.studyLog||m.studyLog.length===0)&&<div className="empty">Nessuna sessione di studio registrata</div>}
+            {(m.studyLog||[]).slice().reverse().map(l=>(
+              <div key={l.id} className="log-item"><div className="log-left"><span className="log-type">{l.topic||"Studio"}</span><span className="log-date">{fmt(l.date)} · {l.hours}h</span></div><button className="btn-del" onClick={()=>delLog(l.id)}>×</button></div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── AI COACH TAB ─────────────────────────────────────────────────────────────
+function CoachTab({data}){
+  const SECTIONS=[
+    {id:"overview",icon:"🎯",title:"Panoramica settimana",prompt:"Fai un'analisi completa e onesta della mia settimana considerando tutti i dati disponibili: allenamenti, corse, sonno, HRV, esami, studio Meta Ads. Identifica punti di forza, punti deboli, pattern da migliorare. Come sto rispetto ai miei obiettivi di lungo termine (laurea, freelance, fitness ibrido)?"},
+    {id:"fitness",icon:"💪",title:"Piano fitness prossimi 7 giorni",prompt:"Basandoti sui miei dati di allenamento e recupero (sonno, HRV, HR a riposo), costruisci un piano ottimale per i prossimi 7 giorni. Specifica ogni giorno: cosa fare, intensità, e perché quella scelta. Considera il mio schema ibrido Upper/Lower/Full Body + 3 giorni running. Sii preciso."},
+    {id:"recovery",icon:"🔋",title:"Stato recupero & segnali d'allarme",prompt:"Analizza sonno, HRV e HR a riposo in dettaglio. Ci sono segnali di overtraining o under-recovery? Il mio corpo è pronto per allenarsi ad alta intensità questa settimana? Cosa significano i numeri che ho registrato? Devo ridurre il carico?"},
+    {id:"time",icon:"⏱",title:"Come strutturare la settimana",prompt:"Ho un lavoro fisso (lun-ven), pochi esami alla laurea, piano allenamento 6 giorni, studio Meta Ads (obiettivo 3h/sett). Come distribuisco tutto in modo realistico? Costruisci una struttura settimanale tipo con slots orari concreti per sere e weekend."},
+    {id:"freelance",icon:"📈",title:"Strategia freelance prossimi 30 giorni",prompt:"Dove sono oggi con Meta Ads (studio, certificazione, clienti, revenue)? Cosa faccio esattamente nei prossimi 30 giorni per avere clienti paganti? Dammi un piano d'azione step by step con priorità chiare. Niente consigli generici — solo azioni concrete."},
+  ];
+
+  const[expanded,setExpanded]=useState({});
+  const[texts,setTexts]=useState({});
+  const[loading,setLoading]=useState({});
+  const[chatInput,setChatInput]=useState("");
+  const[chat,setChat]=useState([]);
+  const[chatLoading,setChatLoading]=useState(false);
+
+  const toggle=async(id,prompt)=>{
+    const isOpen=expanded[id];
+    setExpanded({...expanded,[id]:!isOpen});
+    if(isOpen||texts[id])return;
+    setLoading({...loading,[id]:true});
+    try{
+      const result=await askClaude(`${buildSummary(data)}\n\n=== RICHIESTA ===\n${prompt}`);
+      setTexts({...texts,[id]:result});
+    }catch(e){setTexts({...texts,[id]:"Errore. Controlla la connessione e riprova."});}
+    setLoading({...loading,[id]:false});
+  };
+
+  const refresh=async(id,prompt,e)=>{
+    e.stopPropagation();
+    setLoading({...loading,[id]:true});setTexts({...texts,[id]:""});
+    try{
+      const result=await askClaude(`${buildSummary(data)}\n\n=== RICHIESTA ===\n${prompt}`);
+      setTexts({...texts,[id]:result});
+    }catch(err){setTexts({...texts,[id]:"Errore. Riprova."});}
+    setLoading({...loading,[id]:false});
+  };
+
+  const sendChat=async()=>{
+    if(!chatInput.trim()||chatLoading)return;
+    const userMsg={role:"user",text:chatInput};
+    const newChat=[...chat,userMsg];
+    setChat(newChat);setChatInput("");setChatLoading(true);
+    try{
+      const summary=buildSummary(data);
+      const messages=newChat.map((m,i)=>({
+        role:m.role==="user"?"user":"assistant",
+        content:i===0?`${summary}\n\nDomanda: ${m.text}`:m.text
+      }));
+      const reply=await askClaudeChat(messages);
+      setChat([...newChat,{role:"ai",text:reply}]);
+    }catch(e){setChat([...newChat,{role:"ai",text:"Errore di rete. Riprova."}]);}
+    setChatLoading(false);
+  };
+
+  async function askClaudeChat(messages){
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM_COACH,messages})
+    });
+    const d=await res.json();
+    if(!res.ok)throw new Error(d.error?.message||"Errore");
+    return d.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+  }
+
+  return(
+    <div className="coach-tab">
+      <div className="coach-hero">
+        <h2>✦ AI Coach</h2>
+        <p>Analisi personalizzata basata sui tuoi dati reali — workout, sleep, esami, freelance</p>
+      </div>
+      <div className="coach-sections">
+        {SECTIONS.map(s=>(
+          <div key={s.id} className="coach-card">
+            <div className={`coach-card-header${expanded[s.id]?" open":""}`} onClick={()=>toggle(s.id,s.prompt)}>
+              <div className="coach-card-title"><span className="coach-card-icon">{s.icon}</span>{s.title}</div>
+              <div style={{display:"flex",gap:".5rem",alignItems:"center"}}>
+                {texts[s.id]&&!loading[s.id]&&<button className="ai-ask-btn" style={{fontSize:".68rem",padding:".25rem .6rem"}} onClick={(e)=>refresh(s.id,s.prompt,e)}>↻</button>}
+                <span style={{color:"var(--muted)",fontSize:"1rem"}}>{expanded[s.id]?"▲":"▼"}</span>
+              </div>
+            </div>
+            {expanded[s.id]&&(
+              <div className="coach-card-body">
+                {loading[s.id]&&<div className="ai-loading"><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/><span style={{marginLeft:6}}>Analisi in corso...</span></div>}
+                {texts[s.id]&&!loading[s.id]&&<div className="ai-content" dangerouslySetInnerHTML={{__html:`<p>${fmtAI(texts[s.id])}</p>`}}/>}
+              </div>
+            )}
+          </div>
+        ))}
+
+        <div className="coach-card">
+          <div className={`coach-card-header${expanded.chat?" open":""}`} onClick={()=>setExpanded({...expanded,chat:!expanded.chat})}>
+            <div className="coach-card-title"><span className="coach-card-icon">💬</span>Chatta con il Coach</div>
+            <span style={{color:"var(--muted)",fontSize:"1rem"}}>{expanded.chat?"▲":"▼"}</span>
+          </div>
+          {expanded.chat&&(
+            <div className="coach-card-body">
+              {chat.length===0&&<div className="ai-placeholder">Esempi: "Sono pronto per una sessione intensa domani?" · "Come studio Diritto con poco tempo?" · "Ho bisogno di un giorno di rest?"</div>}
+              <div className="coach-chat">
+                {chat.map((m,i)=>(
+                  <div key={i} className={`coach-msg ${m.role}`}>
+                    {m.role==="ai"?<span dangerouslySetInnerHTML={{__html:`<p>${fmtAI(m.text)}</p>`}}/>:m.text}
+                  </div>
+                ))}
+                {chatLoading&&<div className="ai-loading" style={{padding:".5rem"}}><span className="ai-dot"/><span className="ai-dot"/><span className="ai-dot"/></div>}
+              </div>
+              <div className="coach-ask-row">
+                <input className="coach-ask-input" placeholder="Fai una domanda..." value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendChat()}/>
+                <button className="coach-send-btn" onClick={sendChat} disabled={chatLoading}>{chatLoading?"...":"Invia"}</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── APP ──────────────────────────────────────────────────────────────────────
+const TABS=[
+  {id:"workout",label:"Workout",icon:"🏋️"},
+  {id:"run",label:"Running",icon:"🏃"},
+  {id:"todo",label:"Obiettivi",icon:"✓"},
+  {id:"sleep",label:"Sleep",icon:"😴"},
+  {id:"esami",label:"Esami",icon:"📚"},
+  {id:"meta",label:"Meta Ads",icon:"📈"},
+  {id:"coach",label:"AI Coach",icon:"✦",ai:true},
+];
+
+function App(){
+  const[data,save]=useStorage();
+  const[tab,setTab]=useState("workout");
+  const h=new Date().getHours();
+  const greeting=h<12?"Buongiorno":h<18?"Buon pomeriggio":"Buonasera";
+  const weekW=data.workouts.filter(w=>(new Date()-new Date(w.date))/86400000<7).length;
+  const weekKm=data.runs.filter(r=>(new Date()-new Date(r.date))/86400000<7).reduce((s,r)=>s+(parseFloat(r.distance)||0),0).toFixed(1);
+  return(
+    <div className="dashboard">
+      <div className="topbar">
+        <div className="topbar-left"><h1>GIMMX</h1><p>{greeting} — {new Date().toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}</p></div>
+        <div className="topbar-right">{weekW} workout · {weekKm}km<br/>questa settimana</div>
+      </div>
+      <nav className="nav">
+        {TABS.map(t=><button key={t.id} className={`nav-btn${t.ai?" ai-btn":""}${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)}>{t.icon} {t.label}</button>)}
+      </nav>
+      {tab==="workout"&&<WorkoutTab data={data} save={save}/>}
+      {tab==="run"&&<RunTab data={data} save={save}/>}
+      {tab==="todo"&&<TodoTab data={data} save={save}/>}
+      {tab==="sleep"&&<SleepTab data={data} save={save}/>}
+      {tab==="esami"&&<EsamiTab data={data} save={save}/>}
+      {tab==="meta"&&<MetaTab data={data} save={save}/>}
+      {tab==="coach"&&<CoachTab data={data}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
